@@ -1,3 +1,15 @@
+.. image:: https://badge.fury.io/py/filesysdb.svg
+    :target: https://badge.fury.io/py/filesysdb
+
+.. image:: https://pypip.in/download/filesysdb/badge.svg
+    :target: https://badge.fury.io/py/filesysdb
+
+.. image:: https://travis-ci.org/fictorial/filesysdb.svg?branch=master
+    :target: https://travis-ci.org/fictorial/filesysdb
+
+.. image:: https://coveralls.io/repos/github/fictorial/filesysdb/badge.svg?branch=master
+    :target: https://coveralls.io/github/fictorial/filesysdb?branch=master
+
 filesysdb
 =========
 
