@@ -15,7 +15,10 @@ import unicodedata
 
 
 _logger = logging.getLogger(__name__)
-_basepath = 'data'
+_basepath = None
+_serialize = None
+_deserialize = None
+_ext = None
 _db = aadict()
 
 
@@ -53,8 +56,8 @@ def object_path(collection, id):
     if isinstance(id, dict) and 'id' in id:
         id = id['id']
     normalized_id = normalize_text(str(id), lcase=False)
-    return os.path.join(_basepath,
-        collection, '%s.json' % normalized_id)
+    return os.path.join(_basepath, collection,
+        '%s.%s' % (normalized_id, _ext))
 
 
 def collection_path(collection):
@@ -65,7 +68,8 @@ def collection_path(collection):
 def load_object_at_path(path):
     """Load an object from disk at explicit path"""
     with open(path, 'r') as f:
-        return aadict(json.load(f))
+        data = _deserialize(f.read())
+        return aadict(data)
 
 
 def load_object(collection, id):
@@ -96,13 +100,21 @@ def _clear():
     _db.clear()
 
 
-def prepare(base_path=None):
+def prepare(base_path='data',
+            serialize=json.dumps,
+            deserialize=json.loads,
+            file_ext='json'):
     """After you have added your collections, prepare the database
     for use."""
-    global _basepath
-    if base_path != _basepath:
-        _basepath = base_path
-    _logger.debug('preparing with base path %s', _basepath)
+    global _basepath, _deserialize, _serialize, _ext
+    _basepath = base_path
+    assert callable(serialize)
+    assert callable(deserialize)
+    _serialize = serialize
+    _deserialize = deserialize
+    _ext = file_ext
+    _logger.debug('preparing with base path %s and file ext %s',
+        _basepath, _ext)
     assert len(_db)
     for collection in _db.keys():
         c_path = collection_path(collection)
@@ -113,7 +125,7 @@ def prepare(base_path=None):
 
 def object_count(collection):
     """Returns the number of objects in the given ``collection``."""
-    return len(glob('%s/*.json' % collection_path(collection)))
+    return len(glob('%s/*.%s' % (collection_path(collection), _ext)))
 
 
 def each_object(collection):
@@ -121,7 +133,7 @@ def each_object(collection):
     The objects are loaded from cache and failing that,
     from disk."""
     c_path = collection_path(collection)
-    paths = glob('%s/*.json' % c_path)
+    paths = glob('%s/*.%s' % (c_path, _ext))
     for path in paths:
         yield load_object_at_path(path)
 
@@ -130,9 +142,9 @@ def each_object_id(collection):
     """Yields each object ID in the given ``collection``.
     The objects are not loaded."""
     c_path = collection_path(collection)
-    paths = glob('%s/*.json' % c_path)
+    paths = glob('%s/*.%s' % (c_path, _ext))
     for path in paths:
-        match = regex.match(r'.+/(.+)\.json$', path)
+        match = regex.match(r'.+/(.+)\.%s$' % _ext, path)
         yield match.groups()[0]
 
 
@@ -155,7 +167,8 @@ def save_object(collection, obj):
     path = object_path(collection, id)
     temp_path = '%s.temp' % path
     with open(temp_path, 'w') as f:
-        json.dump(obj, f)
+        data = _serialize(obj)
+        f.write(data)
     shutil.move(temp_path, path)
     if id in _db[collection].cache:
         _db[collection].cache[id] = obj
