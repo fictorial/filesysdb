@@ -1,0 +1,24 @@
+language: python
+python:
+- '3.3'
+- '3.4'
+- '3.5'
+- 3.5-dev
+- nightly
+install:
+- pip install .
+- pip install -r requirements.txt
+- pip install -r requirements-test.txt
+- pip install coveralls
+script:
+- py.test --cov=filesysdb --cov-report=term-missing tests.py
+after_success:
+- coveralls
+deploy:
+  provider: pypi
+  distributions: sdist
+  user: fictorial
+  password:
+    secure: P6/fZHVWx1bVZE1/Orq5PV5uroo4jQ+7L/qjFrXxCtxKULqTADPjh24RXZ8G/wGKSNHayGPd3WjbDoTYOcZp+DCYQPTs5PXcjfN146++DxzM0bRh4gMpV8oq35HF+6aIZFnSFb/RrM3KsJ+a4Vvby6rL9AGHn+OskIN9KemaumGyScN8nzDowKGCDK1nVWVRYMVUWpu+uHd+NxKS7IWNm0/8gSK+Ss3XOFCY6rWaBHO84yz4P/dJypx1K0MXr0CPpVjSao5EC6GycwGX3SumtV050XxB2FJgf6qAhJmIUYFDDqrCZxTHV2KWBEYoa1gNpmwQFk0HiMNpKkiSyr8QVZRWBKRH4Mr+fFfgDvV46Sl2oDqsM3o/P1hE+7re0XK45oTt31tggFPEpoHTdqJAe/RYRWx8yLdRmcTdwDq5Csu2oudQdlenk6sbfTEkSqO23K3+xeW08+ZVUNQEdxUDwqgSZkCZKjaERwcuO5P7C5TFY6wQrWnVOejwuzw4jTIZpcD2dbBrCBpJQzGlJp46VfGctZvvixpQ88ulYYIrpSaf1UMEY8cC92MAFFA5Meb7DDhkPTs6qDz25EtjkDHlVi2gnpqJeINXtKg1SxRL1mkE1AHhhzIHs76I3FZWyMTIDBKdbSMzsV1Gni827qaGj6eMu2sW87ElUoRE7/pDOrk=
+  on:
+    tags: true
